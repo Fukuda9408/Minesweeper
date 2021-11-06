@@ -14,7 +14,7 @@ type Props = {
 export const Button = (props: Props) => {
   const {val, pushed, onClick} = props
   return(
-    <SColorButton pushed={pushed} onClick={onClick}>{!pushed ? "  " : val}</SColorButton>
+    <SColorButton pushed={pushed} onClick={onClick}>{!pushed ? "s" : val}</SColorButton>
   )
 }
 
