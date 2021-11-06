@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Button } from "./components/Button";
 import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
+import { usePushButton } from "./hooks/usePushButton";
 
 const HEIGHT = 10;
 const WIDTH = 10;
@@ -11,41 +12,38 @@ const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 function App() {
   const { createAllFalse, createBomb, createAllZero, calculateAroudBomb } =
     useCreateSomeDimensions();
+  const { pushButton } = usePushButton();
   const [aroundBomb, setAroundBomb] = useState<number[][]>(
     createAllZero(WIDTH, HEIGHT)
   );
-  const [buttonPushed, setButtonPushed] = useState<boolean[][]>(
+  const [buttonPushedState, setButtonPushedState] = useState<boolean[][]>(
     createAllFalse(WIDTH, HEIGHT)
   );
   const [bombed, setBombed] = useState<boolean>(false);
 
   useEffect(() => {
-    const bomb = createBomb(WIDTH, HEIGHT, 10);
+    const bomb = createBomb(WIDTH, HEIGHT, 15);
     setAroundBomb(calculateAroudBomb(WIDTH, HEIGHT, bomb));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const clickButton: (h: number, w: number) => void = (h, w) => {
-    let newClickButton: boolean[][] = [];
-
+    let newButtonPushedState: boolean[][] = []
     // Only the button not pushed
-    if (!buttonPushed[h][w]) {
-      for (let height = 0; height < HEIGHT; height++) {
-        newClickButton[height] = [];
-        for (let width = 0; width < WIDTH; width++) {
-          if (height === h && width === w) {
-            newClickButton[height][width] = true;
-          } else {
-            newClickButton[height][width] = buttonPushed[height][width];
-          }
+    if (!buttonPushedState[h][w]) {
+      pushButton(h, w, HEIGHT, WIDTH, buttonPushedState, aroundBomb)
+      for (let h = 0; h < HEIGHT; h++) {
+        newButtonPushedState[h] = []
+        for (let w = 0; w < WIDTH; w++) {
+          newButtonPushedState[h][w] = buttonPushedState[h][w]
         }
       }
-      setButtonPushed(newClickButton);
+      setButtonPushedState(newButtonPushedState);
+    }
       // After Click, whether bomb is exist in that clicked button
-      if (aroundBomb[h][w] === -1) {
-        setBombed(true)
-        alert("Baaan");
-      }
+    if (aroundBomb[h][w] === -1) {
+      setBombed(true);
+      setTimeout(() => alert("Bann"), 100);
     }
   };
 
@@ -57,7 +55,7 @@ function App() {
             <Std>
               <Button
                 val={aroundBomb[h][w]}
-                pushed={buttonPushed[h][w]}
+                pushed={buttonPushedState[h][w]}
                 onClick={() => clickButton(h, w)}
                 bombed={bombed}
               ></Button>

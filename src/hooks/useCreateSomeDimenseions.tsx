@@ -86,8 +86,6 @@ export const useCreateSomeDimensions = () => {
         }
       }
     }
-    console.log("bomb", bomb)
-    console.log("bomCount", bombCount)
     return bombCount
   }
 
