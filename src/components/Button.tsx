@@ -7,14 +7,16 @@ type ColorButtonProps = {
 
 type Props = {
   pushed: boolean
-  val: string
+  val: number
+  bombed: boolean
   onClick: () => void
 }
 
 export const Button = (props: Props) => {
-  const {val, pushed, onClick} = props
+  const {val, pushed, onClick, bombed} = props
   return(
-    <SColorButton pushed={pushed} onClick={onClick}>{!pushed ? "s" : val}</SColorButton>
+    // todo: diplay bomb image
+    <SColorButton disabled={bombed} pushed={pushed} onClick={onClick}>{!pushed ? "s" : val === -1 ? "●" : val}</SColorButton>
   )
 }
 
