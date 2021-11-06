@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { Button } from "./components/Button";
 import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
 import { usePushButton } from "./hooks/usePushButton";
 
-const HEIGHT = 10;
-const WIDTH = 10;
-const BOMB_NUM = 15;
+const HEIGHT = 5;
+const WIDTH = 5;
+const BOMB_NUM = 3;
 const width: number[] = [...Array(WIDTH)].map((_, i) => i);
 const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 const directions = [
@@ -34,6 +34,7 @@ function App() {
     createAllFalse(WIDTH, HEIGHT)
   );
   const [flagNum, setFlagNum] = useState<number>(0);
+  const openedButtonNumRef = useRef(0)
   const [bombed, setBombed] = useState<boolean>(false);
 
   useEffect(() => {
@@ -54,7 +55,8 @@ function App() {
         aroundBomb,
         setBombed,
         isRightButtonPushed,
-        false
+        false,
+        openedButtonNumRef
       );
       setButtonPushedState(copyDimension(buttonPushedState, HEIGHT, WIDTH));
       // Push opend Button
@@ -79,10 +81,17 @@ function App() {
           aroundBomb,
           setBombed,
           isRightButtonPushed,
-          true
+          true,
+          openedButtonNumRef
         );
         setButtonPushedState(copyDimension(buttonPushedState, HEIGHT, WIDTH));
       }
+    }
+
+    if (openedButtonNumRef.current === WIDTH * HEIGHT - BOMB_NUM) {
+      setTimeout(() => {
+        alert("Success")
+      }, 100)
     }
   };
 
@@ -129,7 +138,8 @@ function App() {
           ))}
         </tr>
       ))}
-      残りの爆弾数: {BOMB_NUM - flagNum}
+      残りの爆弾数: {BOMB_NUM - flagNum}<br />
+      開けた数: {openedButtonNumRef.current}
     </div>
   );
 }

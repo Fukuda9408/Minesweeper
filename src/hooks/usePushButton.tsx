@@ -19,7 +19,8 @@ export const usePushButton = () => {
     bombCount: number[][],
     setBomb: React.Dispatch<React.SetStateAction<boolean>>,
     flagState: boolean[][],
-    firstFlag: boolean
+    firstFlag: boolean,
+    openedButtonNumRef: React.MutableRefObject<number>
   ) => void = (
     h,
     w,
@@ -29,15 +30,17 @@ export const usePushButton = () => {
     bombCount,
     setBomb,
     flagState,
-    firstFlag
+    firstFlag,
+    opendButtonNumRef
   ) => {
     if ((!buttonPushedState[h][w] && !flagState[h][w]) || firstFlag) {
       buttonPushedState[h][w] = true;
+      if (!firstFlag) opendButtonNumRef.current += 1
       // bomb
       if (bombCount[h][w] === -1) {
         setTimeout(() => {
           setBomb(true);
-          alert("Baaa");
+          alert("Failed....");
         }, 100);
         // can push around
       } else if (bombCount[h][w] === 0 || firstFlag) {
@@ -54,7 +57,8 @@ export const usePushButton = () => {
               bombCount,
               setBomb,
               flagState,
-              false
+              false,
+              opendButtonNumRef
             );
           }
         }
