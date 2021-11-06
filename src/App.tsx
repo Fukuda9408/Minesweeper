@@ -6,6 +6,7 @@ import { usePushButton } from "./hooks/usePushButton";
 
 const HEIGHT = 10;
 const WIDTH = 10;
+const BOMB_NUM = 15;
 const width: number[] = [...Array(WIDTH)].map((_, i) => i);
 const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 const directions = [
@@ -32,10 +33,11 @@ function App() {
   const [isRightButtonPushed, setIsRightButtonPushed] = useState<boolean[][]>(
     createAllFalse(WIDTH, HEIGHT)
   );
+  const [flagNum, setFlagNum] = useState<number>(0);
   const [bombed, setBombed] = useState<boolean>(false);
 
   useEffect(() => {
-    const bomb = createBomb(WIDTH, HEIGHT, 15);
+    const bomb = createBomb(WIDTH, HEIGHT, BOMB_NUM);
     setAroundBomb(calculateAroudBomb(WIDTH, HEIGHT, bomb));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -100,12 +102,13 @@ function App() {
           }
         }
       }
+      setFlagNum((prevFlagNum) => prevFlagNum + 1)
       setIsRightButtonPushed(newIsRighButtonPushed);
     }
   };
 
   return (
-    <div onContextMenu={(e)=> e.preventDefault()}>
+    <div onContextMenu={(e) => e.preventDefault()}>
       {height.map((h) => (
         <tr>
           {width.map((w) => (
@@ -122,6 +125,7 @@ function App() {
           ))}
         </tr>
       ))}
+      残りの爆弾数: {BOMB_NUM - flagNum}
     </div>
   );
 }
