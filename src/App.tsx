@@ -91,6 +91,11 @@ function App() {
     width
   ) => {
     if (!buttonPushedState[height][width]) {
+      if (!isRightButtonPushed[height][width]) {
+        setFlagNum((prevFlagNum) => prevFlagNum + 1)
+      } else {
+        setFlagNum((prevFlagNum) => prevFlagNum - 1)
+      }
       const newIsRighButtonPushed: boolean[][] = [];
       for (let h = 0; h < HEIGHT; h++) {
         newIsRighButtonPushed[h] = [];
@@ -102,7 +107,6 @@ function App() {
           }
         }
       }
-      setFlagNum((prevFlagNum) => prevFlagNum + 1)
       setIsRightButtonPushed(newIsRighButtonPushed);
     }
   };
