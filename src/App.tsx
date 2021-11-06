@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import styled from "styled-components";
 import { Button } from "./components/Button";
 import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
@@ -24,9 +24,7 @@ function App() {
   const { createAllFalse, createBomb, createAllZero, calculateAroudBomb } =
     useCreateSomeDimensions();
   const { pushButton } = usePushButton();
-  const [aroundBomb, setAroundBomb] = useState<number[][]>(
-    createAllZero(WIDTH, HEIGHT)
-  );
+  const aroundBomb = useRef<number[][]>(createAllZero(WIDTH, HEIGHT))
   const [buttonPushedState, setButtonPushedState] = useState<boolean[][]>(
     createAllFalse(WIDTH, HEIGHT)
   );
@@ -36,14 +34,14 @@ function App() {
   const [flagNum, setFlagNum] = useState<number>(0);
   const openedButtonNumRef = useRef(0)
   const [bombed, setBombed] = useState<boolean>(false);
-
-  useEffect(() => {
-    const bomb = createBomb(WIDTH, HEIGHT, BOMB_NUM);
-    setAroundBomb(calculateAroudBomb(WIDTH, HEIGHT, bomb));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [firstClick, setFirstClick] = useState<boolean>(true)
 
   const clickButton: (h: number, w: number) => void = (h, w) => {
+    if (firstClick) {
+      const bomb = createBomb(w, h, WIDTH, HEIGHT, BOMB_NUM);
+      aroundBomb.current = calculateAroudBomb(WIDTH, HEIGHT, bomb);
+      setFirstClick(false)
+    }
     // Push Not Opend Button
     if (!isRightButtonPushed[h][w] && !buttonPushedState[h][w]) {
       pushButton(
@@ -52,7 +50,7 @@ function App() {
         HEIGHT,
         WIDTH,
         buttonPushedState,
-        aroundBomb,
+        aroundBomb.current,
         setBombed,
         isRightButtonPushed,
         false,
@@ -71,14 +69,14 @@ function App() {
           }
         }
       }
-      if (aroundFlag === aroundBomb[h][w]) {
+      if (aroundFlag === aroundBomb.current[h][w]) {
         pushButton(
           h,
           w,
           HEIGHT,
           WIDTH,
           buttonPushedState,
-          aroundBomb,
+          aroundBomb.current,
           setBombed,
           isRightButtonPushed,
           true,
@@ -127,7 +125,7 @@ function App() {
           {width.map((w) => (
             <Std>
               <Button
-                val={aroundBomb[h][w]}
+                val={aroundBomb.current[h][w]}
                 pushed={buttonPushedState[h][w]}
                 onClick={() => clickButton(h, w)}
                 onRightClick={() => clickRightButton(h, w)}

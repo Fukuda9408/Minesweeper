@@ -27,10 +27,12 @@ export const useCreateSomeDimensions = () => {
     return arr;
   };
   const createBomb: (
+    w: number,
+    h: number,
     width: number,
     height: number,
     baombCount: number
-  ) => boolean[][] = (width, height, bombCount) => {
+  ) => boolean[][] = (w, h, width, height, bombCount) => {
     let bomb: boolean[][] = [];
     for (let h = 0; h < height; h++) {
       bomb[h] = [];
@@ -46,7 +48,7 @@ export const useCreateSomeDimensions = () => {
       // create 0 ~ width - 1
       const w_random = Math.floor(Math.random() * width);
 
-      if (!bomb[h_random][w_random]) {
+      if (!bomb[h_random][w_random] && h_random !== h && w_random !== w) {
         bomb[h_random][w_random] = true;
         count -= 1;
       }
