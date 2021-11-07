@@ -35,7 +35,7 @@ export const usePushButton = () => {
   ) => {
     if ((!buttonPushedState[h][w] && !flagState[h][w]) || firstFlag) {
       buttonPushedState[h][w] = true;
-      if (!firstFlag) opendButtonNumRef.current += 1
+      if (!firstFlag) opendButtonNumRef.current += 1;
       // bomb
       if (bombCount[h][w] === -1) {
         setTimeout(() => {
@@ -51,8 +51,8 @@ export const usePushButton = () => {
             pushButton(
               d_h,
               d_w,
-              width,
               height,
+              width,
               buttonPushedState,
               bombCount,
               setBomb,

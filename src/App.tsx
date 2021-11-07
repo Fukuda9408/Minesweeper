@@ -1,14 +1,12 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRecoilValue } from "recoil";
 import styled from "styled-components";
+import { sizeState } from ".";
 import { Button } from "./components/Button";
+import { Size } from "./components/Size";
 import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
 import { usePushButton } from "./hooks/usePushButton";
 
-const HEIGHT = 5;
-const WIDTH = 5;
-const BOMB_NUM = 3;
-const width: number[] = [...Array(WIDTH)].map((_, i) => i);
-const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 const directions = [
   // w, h
   [-1, -1],
@@ -21,26 +19,45 @@ const directions = [
   [1, 1],
 ];
 function App() {
+  console.log("Start");
+  const size = useRecoilValue(sizeState);
+  const HEIGHT = size.height;
+  const WIDTH = size.width;
+  // const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.20);
+  const BOMB_NUM = 1;
+  const width: number[] = [...Array(WIDTH)].map((_, i) => i);
+  const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
+
   const { createAllFalse, createBomb, createAllZero, calculateAroudBomb } =
     useCreateSomeDimensions();
   const { pushButton } = usePushButton();
-  const aroundBomb = useRef<number[][]>(createAllZero(WIDTH, HEIGHT))
+  const aroundBomb = useRef<number[][]>(createAllZero(WIDTH, HEIGHT + 100));
   const [buttonPushedState, setButtonPushedState] = useState<boolean[][]>(
-    createAllFalse(WIDTH, HEIGHT)
+    createAllFalse(WIDTH, HEIGHT + 100)
   );
   const [isRightButtonPushed, setIsRightButtonPushed] = useState<boolean[][]>(
-    createAllFalse(WIDTH, HEIGHT)
+    createAllFalse(WIDTH, HEIGHT + 100)
   );
   const [flagNum, setFlagNum] = useState<number>(0);
-  const openedButtonNumRef = useRef(0)
+  const openedButtonNumRef = useRef(0);
   const [bombed, setBombed] = useState<boolean>(false);
-  const [firstClick, setFirstClick] = useState<boolean>(true)
+  const [firstClick, setFirstClick] = useState<boolean>(true);
+
+  useEffect(() => {
+    console.log("Reset");
+    setButtonPushedState(createAllFalse(WIDTH, HEIGHT + 100));
+    setIsRightButtonPushed(createAllFalse(WIDTH, HEIGHT + 100));
+    setFlagNum(0);
+    openedButtonNumRef.current = 0;
+    setBombed(false);
+    setFirstClick(true);
+  }, [size]);
 
   const clickButton: (h: number, w: number) => void = (h, w) => {
     if (firstClick) {
       const bomb = createBomb(w, h, WIDTH, HEIGHT, BOMB_NUM);
       aroundBomb.current = calculateAroudBomb(WIDTH, HEIGHT, bomb);
-      setFirstClick(false)
+      setFirstClick(false);
     }
     // Push Not Opend Button
     if (!isRightButtonPushed[h][w] && !buttonPushedState[h][w]) {
@@ -87,9 +104,12 @@ function App() {
     }
 
     if (openedButtonNumRef.current === WIDTH * HEIGHT - BOMB_NUM) {
-      setTimeout(() => {
-        alert("Success")
-      }, 100)
+      if (!bombed) {
+        setTimeout(() => {
+          setBombed(true);
+          alert("Success");
+        }, 100);
+      }
     }
   };
 
@@ -99,9 +119,9 @@ function App() {
   ) => {
     if (!buttonPushedState[height][width]) {
       if (!isRightButtonPushed[height][width]) {
-        setFlagNum((prevFlagNum) => prevFlagNum + 1)
+        setFlagNum((prevFlagNum) => prevFlagNum + 1);
       } else {
-        setFlagNum((prevFlagNum) => prevFlagNum - 1)
+        setFlagNum((prevFlagNum) => prevFlagNum - 1);
       }
       const newIsRighButtonPushed: boolean[][] = [];
       for (let h = 0; h < HEIGHT; h++) {
@@ -120,23 +140,35 @@ function App() {
 
   return (
     <div onContextMenu={(e) => e.preventDefault()}>
-      {height.map((h) => (
-        <tr>
-          {width.map((w) => (
-            <Std>
-              <Button
-                val={aroundBomb.current[h][w]}
-                pushed={buttonPushedState[h][w]}
-                onClick={() => clickButton(h, w)}
-                onRightClick={() => clickRightButton(h, w)}
-                rightPushed={isRightButtonPushed[h][w]}
-                bombed={bombed}
-              ></Button>
-            </Std>
-          ))}
-        </tr>
-      ))}
-      残りの爆弾数: {BOMB_NUM - flagNum}<br />
+      <Size />
+      {height.map((h) => {
+        return (
+          <tr key={h}>
+            {width.map((w) => {
+              // console.log("aroundBomb", aroundBomb.current)
+              // console.log("pushedState", buttonPushedState)
+              // console.log("right", isRightButtonPushed)
+              console.log(`aroundBomb[${h}][${w}]`, aroundBomb.current[h][w]);
+              console.log(`pushedState[${h}][${w}`, buttonPushedState[w][h]);
+              console.log(`right[${h}][${w}`, isRightButtonPushed[w][h]);
+              return (
+                <Std>
+                  <Button
+                    val={aroundBomb.current[h][w]}
+                    pushed={buttonPushedState[h][w]}
+                    onClick={() => clickButton(h, w)}
+                    onRightClick={() => clickRightButton(h, w)}
+                    rightPushed={isRightButtonPushed[h][w]}
+                    bombed={bombed}
+                  ></Button>
+                </Std>
+              );
+            })}
+          </tr>
+        );
+      })}
+      残りの爆弾数: {BOMB_NUM - flagNum}
+      <br />
       開けた数: {openedButtonNumRef.current}
     </div>
   );
@@ -160,6 +192,9 @@ const copyDimension: (
     for (let w = 0; w < width; w++) {
       dst[h][w] = src[h][w];
     }
+  }
+  for (let h = height; h < height + 100; h++) {
+    dst[h] = [];
   }
   return dst;
 };
