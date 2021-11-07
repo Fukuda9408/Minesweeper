@@ -19,12 +19,10 @@ const directions = [
   [1, 1],
 ];
 function App() {
-  console.log("Start");
   const size = useRecoilValue(sizeState);
   const HEIGHT = size.height;
   const WIDTH = size.width;
-  // const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.20);
-  const BOMB_NUM = 1;
+  const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.20);
   const width: number[] = [...Array(WIDTH)].map((_, i) => i);
   const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 
@@ -44,7 +42,6 @@ function App() {
   const [firstClick, setFirstClick] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log("Reset");
     setButtonPushedState(createAllFalse(WIDTH, HEIGHT + 100));
     setIsRightButtonPushed(createAllFalse(WIDTH, HEIGHT + 100));
     setFlagNum(0);
@@ -145,12 +142,6 @@ function App() {
         return (
           <tr key={h}>
             {width.map((w) => {
-              // console.log("aroundBomb", aroundBomb.current)
-              // console.log("pushedState", buttonPushedState)
-              // console.log("right", isRightButtonPushed)
-              console.log(`aroundBomb[${h}][${w}]`, aroundBomb.current[h][w]);
-              console.log(`pushedState[${h}][${w}`, buttonPushedState[w][h]);
-              console.log(`right[${h}][${w}`, isRightButtonPushed[w][h]);
               return (
                 <Std>
                   <Button
