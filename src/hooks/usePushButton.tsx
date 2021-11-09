@@ -1,3 +1,6 @@
+import { useRecoilValue } from "recoil";
+import { sizeState } from "..";
+
 const directions = [
   // w, h
   [-1, -1],
@@ -9,61 +12,52 @@ const directions = [
   [1, 0],
   [1, 1],
 ];
-export const usePushButton = () => {
-  const pushButton: (
+export const useOpenButton = () => {
+  const size = useRecoilValue(sizeState);
+  const openButton: (
     h: number,
     w: number,
-    height: number,
-    width: number,
-    buttonPushedState: boolean[][],
-    bombCount: number[][],
-    setBomb: React.Dispatch<React.SetStateAction<boolean>>,
-    flagState: boolean[][],
-    firstFlag: boolean,
-    openedButtonNumRef: React.MutableRefObject<number>
+    isOpenedButton: boolean[][],
+    aroundBomb: number[][],
+    setFailed: React.Dispatch<React.SetStateAction<boolean>>,
+    isFlagedButton: boolean[][],
+    isAlreadyOpened: boolean,
+    openedButtonNum: number
   ) => void = (
     h,
     w,
-    height,
-    width,
-    buttonPushedState,
-    bombCount,
-    setBomb,
-    flagState,
-    firstFlag,
-    opendButtonNumRef
+    isOpenedButton,
+    aroundBomb,
+    setFailed,
+    isFlagedButton,
+    isAlreadyOpened,
+    opendButtonNum
   ) => {
-    if ((!buttonPushedState[h][w] && !flagState[h][w]) || firstFlag) {
-      buttonPushedState[h][w] = true;
-      if (!firstFlag) opendButtonNumRef.current += 1;
-      // bomb
-      if (bombCount[h][w] === -1) {
-        setTimeout(() => {
-          setBomb(true);
-          alert("Failed....");
-        }, 100);
+    if ((!isOpenedButton[h][w] && !isFlagedButton[h][w]) || isAlreadyOpened) {
+      isOpenedButton[h][w] = true;
+      if (!isAlreadyOpened) opendButtonNum += 1;
+      if (aroundBomb[h][w] === -1) {
+        setFailed(true)
         // can push around
-      } else if (bombCount[h][w] === 0 || firstFlag) {
+      } else if (aroundBomb[h][w] === 0 || isAlreadyOpened) {
         for (let d = 0; d < directions.length; d++) {
           const d_w = w + directions[d][0];
           const d_h = h + directions[d][1];
-          if (d_w >= 0 && d_w < width && d_h >= 0 && d_h < height) {
-            pushButton(
+          if (d_w >= 0 && d_w < size.width && d_h >= 0 && d_h < size.height) {
+            openButton(
               d_h,
               d_w,
-              height,
-              width,
-              buttonPushedState,
-              bombCount,
-              setBomb,
-              flagState,
+              isOpenedButton,
+              aroundBomb,
+              setFailed,
+              isFlagedButton,
               false,
-              opendButtonNumRef
+              opendButtonNum
             );
           }
         }
       }
     }
   };
-  return { pushButton };
+  return { openButton };
 };

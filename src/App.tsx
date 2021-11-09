@@ -7,19 +7,8 @@ import { Information } from "./components/organisms/Information";
 import { Size } from "./components/organisms/Size";
 import { Timer } from "./components/organisms/Timer";
 import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
-import { usePushButton } from "./hooks/usePushButton";
+import { useOpenButton } from "./hooks/usePushButton";
 
-const directions = [
-  // w, h
-  [-1, -1],
-  [-1, 0],
-  [-1, 1],
-  [0, -1],
-  [0, 1],
-  [1, -1],
-  [1, 0],
-  [1, 1],
-];
 function App() {
   const size = useRecoilValue(sizeState);
   const HEIGHT = size.height;
@@ -30,7 +19,10 @@ function App() {
 
   const { createAllFalse, createBomb, createAllZero, calculateAroudBomb } =
     useCreateSomeDimensions();
-  const { pushButton } = usePushButton();
+  const { openButton } = useOpenButton();
+
+  // After opening the button, `aroundBom` is changed.]
+  // After that I have to use that chened value, so useRef, not useState
   const aroundBomb = useRef<number[][]>(createAllZero(WIDTH, HEIGHT + 100));
   const [isOpenedButton, setIsOpenedButton] = useState<boolean[][]>(
     createAllFalse(WIDTH, HEIGHT + 100)
@@ -39,66 +31,74 @@ function App() {
     createAllFalse(WIDTH, HEIGHT + 100)
   );
   const [flagNum, setFlagNum] = useState<number>(0);
+
+  // In `clickButton`, oepnedButtonNum is changed.
+  // After that, the chaned `openedButtonNum` has to be used
+  // in ordet to determing that the game has been suceeded.
   const openedButtonNumRef = useRef(0);
   const [failed, setFailed] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
   const [firstClick, setFirstClick] = useState<boolean>(true);
 
+  // After changing the `size`, variables are initialized.
   useEffect(() => {
     setIsOpenedButton(createAllFalse(WIDTH, HEIGHT + 100));
     setIsFlagedButton(createAllFalse(WIDTH, HEIGHT + 100));
     setFlagNum(0);
     openedButtonNumRef.current = 0;
     setFailed(false);
+    setSuccess(false)
     setFirstClick(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size]);
 
+  const countAroundFlag: (h: number, w: number) => number = (h, w) => {
+    let res = 0
+    for (let d = 0; d < directions.length; d++) {
+      const d_w = w + directions[d][0];
+      const d_h = h + directions[d][1];
+      if (d_w >= 0 && d_w < WIDTH && d_h >= 0 && d_h < HEIGHT) {
+        if (isFlagedButton[d_h][d_w]) {
+          res += 1;
+        }
+      }
+    }
+    return res
+  }
+
   const clickButton: (h: number, w: number) => void = (h, w) => {
+    // After open a button, create bomb
     if (firstClick) {
       const bomb = createBomb(w, h, WIDTH, HEIGHT, BOMB_NUM);
       aroundBomb.current = calculateAroudBomb(WIDTH, HEIGHT, bomb);
       setFirstClick(false);
     }
-    // Push Not Opend Button
+    // Not Opend Button
     if (!isFlagedButton[h][w] && !isOpenedButton[h][w]) {
-      pushButton(
+      openButton(
         h,
         w,
-        HEIGHT,
-        WIDTH,
         isOpenedButton,
         aroundBomb.current,
         setFailed,
         isFlagedButton,
         false,
-        openedButtonNumRef
+        openedButtonNumRef.current
       );
       setIsOpenedButton(copyDimension(isOpenedButton, HEIGHT, WIDTH));
-      // Push opend Button
+    // Opend Button
     } else if (isOpenedButton[h][w]) {
-      let aroundFlag = 0;
-      for (let d = 0; d < directions.length; d++) {
-        const d_w = w + directions[d][0];
-        const d_h = h + directions[d][1];
-        if (d_w >= 0 && d_w < WIDTH && d_h >= 0 && d_h < HEIGHT) {
-          if (isFlagedButton[d_h][d_w]) {
-            aroundFlag += 1;
-          }
-        }
-      }
+      let aroundFlag = countAroundFlag(h, w)
       if (aroundFlag === aroundBomb.current[h][w]) {
-        pushButton(
+        openButton(
           h,
           w,
-          HEIGHT,
-          WIDTH,
           isOpenedButton,
           aroundBomb.current,
           setFailed,
           isFlagedButton,
           true,
-          openedButtonNumRef
+          openedButtonNumRef.current
         );
         setIsOpenedButton(copyDimension(isOpenedButton, HEIGHT, WIDTH));
       }
@@ -114,7 +114,7 @@ function App() {
     }
   };
 
-  const clickFlagedButton: (height: number, width: number) => void = (
+  const standFlag: (height: number, width: number) => void = (
     height,
     width
   ) => {
@@ -152,7 +152,7 @@ function App() {
                     val={aroundBomb.current[h][w]}
                     isOpened={isOpenedButton[h][w]}
                     onClick={() => clickButton(h, w)}
-                    onRightClick={() => clickFlagedButton(h, w)}
+                    onRightClick={() => standFlag(h, w)}
                     isFlaged={isFlagedButton[h][w]}
                     isFinished={failed || success}
                   ></Button>
@@ -177,6 +177,18 @@ const Std = styled.td`
   width: 50px;
   height: 50px;
 `;
+
+const directions = [
+  // w, h
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 0],
+  [1, 1],
+];
 
 const copyDimension: (
   src: boolean[][],
