@@ -1,6 +1,6 @@
 import { ChangeEvent, useState } from "react"
 import { useRecoilState } from "recoil"
-import { sizeState } from ".."
+import { sizeState } from "../.."
 
 export const Size = () => {
   const [size, setSize] = useRecoilState(sizeState)

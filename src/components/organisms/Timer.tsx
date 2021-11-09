@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useStopwatch } from "react-timer-hook";
 import { useRecoilValue } from "recoil";
-import { sizeState } from "..";
+import { sizeState } from "../..";
 
 type Props = {
   timerStart: boolean;

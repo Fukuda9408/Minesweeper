@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
 import styled from "styled-components";
 import { sizeState } from ".";
-import { Button } from "./components/Button";
-import { Size } from "./components/Size";
-import { Timer } from "./components/Timer";
+import { Button } from "./components/atoms/Button";
+import { Information } from "./components/organisms/Information";
+import { Size } from "./components/organisms/Size";
+import { Timer } from "./components/organisms/Timer";
 import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
 import { usePushButton } from "./hooks/usePushButton";
 
@@ -23,7 +24,7 @@ function App() {
   const size = useRecoilValue(sizeState);
   const HEIGHT = size.height;
   const WIDTH = size.width;
-  const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.20);
+  const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.2);
   const width: number[] = [...Array(WIDTH)].map((_, i) => i);
   const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 
@@ -31,25 +32,26 @@ function App() {
     useCreateSomeDimensions();
   const { pushButton } = usePushButton();
   const aroundBomb = useRef<number[][]>(createAllZero(WIDTH, HEIGHT + 100));
-  const [buttonPushedState, setButtonPushedState] = useState<boolean[][]>(
+  const [isOpenedButton, setIsOpenedButton] = useState<boolean[][]>(
     createAllFalse(WIDTH, HEIGHT + 100)
   );
-  const [isRightButtonPushed, setIsRightButtonPushed] = useState<boolean[][]>(
+  const [isFlagedButton, setIsFlagedButton] = useState<boolean[][]>(
     createAllFalse(WIDTH, HEIGHT + 100)
   );
   const [flagNum, setFlagNum] = useState<number>(0);
   const openedButtonNumRef = useRef(0);
-  const [bombed, setBombed] = useState<boolean>(false);
+  const [failed, setFailed] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
   const [firstClick, setFirstClick] = useState<boolean>(true);
 
   useEffect(() => {
-    setButtonPushedState(createAllFalse(WIDTH, HEIGHT + 100));
-    setIsRightButtonPushed(createAllFalse(WIDTH, HEIGHT + 100));
+    setIsOpenedButton(createAllFalse(WIDTH, HEIGHT + 100));
+    setIsFlagedButton(createAllFalse(WIDTH, HEIGHT + 100));
     setFlagNum(0);
     openedButtonNumRef.current = 0;
-    setBombed(false);
+    setFailed(false);
     setFirstClick(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size]);
 
   const clickButton: (h: number, w: number) => void = (h, w) => {
@@ -59,28 +61,28 @@ function App() {
       setFirstClick(false);
     }
     // Push Not Opend Button
-    if (!isRightButtonPushed[h][w] && !buttonPushedState[h][w]) {
+    if (!isFlagedButton[h][w] && !isOpenedButton[h][w]) {
       pushButton(
         h,
         w,
         HEIGHT,
         WIDTH,
-        buttonPushedState,
+        isOpenedButton,
         aroundBomb.current,
-        setBombed,
-        isRightButtonPushed,
+        setFailed,
+        isFlagedButton,
         false,
         openedButtonNumRef
       );
-      setButtonPushedState(copyDimension(buttonPushedState, HEIGHT, WIDTH));
+      setIsOpenedButton(copyDimension(isOpenedButton, HEIGHT, WIDTH));
       // Push opend Button
-    } else if (buttonPushedState[h][w]) {
+    } else if (isOpenedButton[h][w]) {
       let aroundFlag = 0;
       for (let d = 0; d < directions.length; d++) {
         const d_w = w + directions[d][0];
         const d_h = h + directions[d][1];
         if (d_w >= 0 && d_w < WIDTH && d_h >= 0 && d_h < HEIGHT) {
-          if (isRightButtonPushed[d_h][d_w]) {
+          if (isFlagedButton[d_h][d_w]) {
             aroundFlag += 1;
           }
         }
@@ -91,49 +93,49 @@ function App() {
           w,
           HEIGHT,
           WIDTH,
-          buttonPushedState,
+          isOpenedButton,
           aroundBomb.current,
-          setBombed,
-          isRightButtonPushed,
+          setFailed,
+          isFlagedButton,
           true,
           openedButtonNumRef
         );
-        setButtonPushedState(copyDimension(buttonPushedState, HEIGHT, WIDTH));
+        setIsOpenedButton(copyDimension(isOpenedButton, HEIGHT, WIDTH));
       }
     }
 
     if (openedButtonNumRef.current === WIDTH * HEIGHT - BOMB_NUM) {
-      if (!bombed) {
+      if (!failed) {
         setTimeout(() => {
-          setBombed(true);
+          setFailed(true);
           alert("Success");
         }, 100);
       }
     }
   };
 
-  const clickRightButton: (height: number, width: number) => void = (
+  const clickFlagedButton: (height: number, width: number) => void = (
     height,
     width
   ) => {
-    if (!buttonPushedState[height][width]) {
-      if (!isRightButtonPushed[height][width]) {
+    if (!isOpenedButton[height][width]) {
+      if (!isFlagedButton[height][width]) {
         setFlagNum((prevFlagNum) => prevFlagNum + 1);
       } else {
         setFlagNum((prevFlagNum) => prevFlagNum - 1);
       }
-      const newIsRighButtonPushed: boolean[][] = [];
+      const newIsRighButton: boolean[][] = [];
       for (let h = 0; h < HEIGHT; h++) {
-        newIsRighButtonPushed[h] = [];
+        newIsRighButton[h] = [];
         for (let w = 0; w < WIDTH; w++) {
           if (height === h && width === w) {
-            newIsRighButtonPushed[h][w] = !isRightButtonPushed[h][w];
+            newIsRighButton[h][w] = !isFlagedButton[h][w];
           } else {
-            newIsRighButtonPushed[h][w] = isRightButtonPushed[h][w];
+            newIsRighButton[h][w] = isFlagedButton[h][w];
           }
         }
       }
-      setIsRightButtonPushed(newIsRighButtonPushed);
+      setIsFlagedButton(newIsRighButton);
     }
   };
 
@@ -148,11 +150,11 @@ function App() {
                 <Std>
                   <Button
                     val={aroundBomb.current[h][w]}
-                    pushed={buttonPushedState[h][w]}
+                    isOpened={isOpenedButton[h][w]}
                     onClick={() => clickButton(h, w)}
-                    onRightClick={() => clickRightButton(h, w)}
-                    rightPushed={isRightButtonPushed[h][w]}
-                    bombed={bombed}
+                    onRightClick={() => clickFlagedButton(h, w)}
+                    isFlaged={isFlagedButton[h][w]}
+                    isFinished={failed || success}
                   ></Button>
                 </Std>
               );
@@ -160,11 +162,11 @@ function App() {
           </tr>
         );
       })}
-      残りの爆弾数: {BOMB_NUM - flagNum}
-      <br />
-      開けた数: {openedButtonNumRef.current}
-      <br />
-      <Timer timerStart={!firstClick} end={bombed}/>
+      <Information
+        remainBomb={BOMB_NUM - flagNum}
+        openedButtonNum={openedButtonNumRef.current}
+      />
+      <Timer timerStart={!firstClick} end={failed} />
     </div>
   );
 }
