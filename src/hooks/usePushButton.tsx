@@ -19,25 +19,25 @@ export const useOpenButton = () => {
     w: number,
     isOpenedButton: boolean[][],
     aroundBomb: number[][],
-    setFailed: React.Dispatch<React.SetStateAction<boolean>>,
+    faieldRef: React.MutableRefObject<boolean>,
     isFlagedButton: boolean[][],
     isAlreadyOpened: boolean,
-    openedButtonNum: number
+    openedButtonNumRef: React.MutableRefObject<number>
   ) => void = (
     h,
     w,
     isOpenedButton,
     aroundBomb,
-    setFailed,
+    failedRef,
     isFlagedButton,
     isAlreadyOpened,
-    opendButtonNum
+    opendButtonNumRef
   ) => {
     if ((!isOpenedButton[h][w] && !isFlagedButton[h][w]) || isAlreadyOpened) {
       isOpenedButton[h][w] = true;
-      if (!isAlreadyOpened) opendButtonNum += 1;
+      if (!isAlreadyOpened) opendButtonNumRef.current+= 1;
       if (aroundBomb[h][w] === -1) {
-        setFailed(true)
+        failedRef.current = true
         // can push around
       } else if (aroundBomb[h][w] === 0 || isAlreadyOpened) {
         for (let d = 0; d < directions.length; d++) {
@@ -49,10 +49,10 @@ export const useOpenButton = () => {
               d_w,
               isOpenedButton,
               aroundBomb,
-              setFailed,
+              failedRef,
               isFlagedButton,
               false,
-              opendButtonNum
+              opendButtonNumRef
             );
           }
         }

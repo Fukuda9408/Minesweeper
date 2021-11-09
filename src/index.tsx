@@ -11,8 +11,8 @@ type sizeType = {
 export const sizeState = atom<sizeType>({
   key: "sizeState",
   default: {
-    height: 10,
-    width: 10,
+    height: 4,
+    width: 4,
   },
 });
 

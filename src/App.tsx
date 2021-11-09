@@ -13,7 +13,8 @@ function App() {
   const size = useRecoilValue(sizeState);
   const HEIGHT = size.height;
   const WIDTH = size.width;
-  const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.2);
+  // const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.2);
+  const BOMB_NUM = 1
   const width: number[] = [...Array(WIDTH)].map((_, i) => i);
   const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 
@@ -36,7 +37,7 @@ function App() {
   // After that, the chaned `openedButtonNum` has to be used
   // in ordet to determing that the game has been suceeded.
   const openedButtonNumRef = useRef(0);
-  const [failed, setFailed] = useState<boolean>(false);
+  const failedRef = useRef<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false);
   const [firstClick, setFirstClick] = useState<boolean>(true);
 
@@ -46,7 +47,7 @@ function App() {
     setIsFlagedButton(createAllFalse(WIDTH, HEIGHT + 100));
     setFlagNum(0);
     openedButtonNumRef.current = 0;
-    setFailed(false);
+    failedRef.current = false
     setSuccess(false)
     setFirstClick(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -80,10 +81,10 @@ function App() {
         w,
         isOpenedButton,
         aroundBomb.current,
-        setFailed,
+        failedRef,
         isFlagedButton,
         false,
-        openedButtonNumRef.current
+        openedButtonNumRef
       );
       setIsOpenedButton(copyDimension(isOpenedButton, HEIGHT, WIDTH));
     // Opend Button
@@ -95,21 +96,36 @@ function App() {
           w,
           isOpenedButton,
           aroundBomb.current,
-          setFailed,
+          failedRef,
           isFlagedButton,
           true,
-          openedButtonNumRef.current
+          openedButtonNumRef
         );
         setIsOpenedButton(copyDimension(isOpenedButton, HEIGHT, WIDTH));
       }
     }
 
+    // Failed decition
+    if (failedRef.current) {
+      setTimeout(() => {
+        alert("Failed.....")
+      }, 100)
+    }
+
+    // Success decision
     if (openedButtonNumRef.current === WIDTH * HEIGHT - BOMB_NUM) {
-      if (!failed) {
+      // if (!failed) {
+      //   setTimeout(() => {
+      //     setFailed(true);
+      //     alert("Success");
+      //   }, 100);
+      // }
+      if (!failedRef.current) {
+        console.log("success")
+        setSuccess(true)
         setTimeout(() => {
-          setFailed(true);
-          alert("Success");
-        }, 100);
+          alert("Success")
+        }, 100)
       }
     }
   };
@@ -154,7 +170,7 @@ function App() {
                     onClick={() => clickButton(h, w)}
                     onRightClick={() => standFlag(h, w)}
                     isFlaged={isFlagedButton[h][w]}
-                    isFinished={failed || success}
+                    isFinished={failedRef.current || success}
                   ></Button>
                 </Std>
               );
@@ -166,7 +182,7 @@ function App() {
         remainBomb={BOMB_NUM - flagNum}
         openedButtonNum={openedButtonNumRef.current}
       />
-      <Timer timerStart={!firstClick} end={failed} />
+      <Timer timerStart={!firstClick} end={failedRef.current} />
     </div>
   );
 }
