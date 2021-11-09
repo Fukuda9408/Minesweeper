@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { sizeState } from ".";
 import { Button } from "./components/Button";
 import { Size } from "./components/Size";
+import { Timer } from "./components/Timer";
 import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
 import { usePushButton } from "./hooks/usePushButton";
 
@@ -48,6 +49,7 @@ function App() {
     openedButtonNumRef.current = 0;
     setBombed(false);
     setFirstClick(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size]);
 
   const clickButton: (h: number, w: number) => void = (h, w) => {
@@ -161,6 +163,8 @@ function App() {
       残りの爆弾数: {BOMB_NUM - flagNum}
       <br />
       開けた数: {openedButtonNumRef.current}
+      <br />
+      <Timer timerStart={!firstClick} end={bombed}/>
     </div>
   );
 }
