@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
 import styled from "styled-components";
 import { sizeState } from ".";
@@ -10,11 +10,11 @@ import { useCreateSomeDimensions } from "./hooks/useCreateSomeDimenseions";
 import { useOpenButton } from "./hooks/usePushButton";
 
 function App() {
+  console.log("Start Rendering")
   const size = useRecoilValue(sizeState);
   const HEIGHT = size.height;
   const WIDTH = size.width;
-  // const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.2);
-  const BOMB_NUM = 1
+  const BOMB_NUM = Math.floor(HEIGHT * WIDTH * 0.2);
   const width: number[] = [...Array(WIDTH)].map((_, i) => i);
   const height: number[] = [...Array(HEIGHT)].map((_, i) => i);
 
@@ -24,12 +24,12 @@ function App() {
 
   // After opening the button, `aroundBom` is changed.]
   // After that I have to use that chened value, so useRef, not useState
-  const aroundBomb = useRef<number[][]>(createAllZero(WIDTH, HEIGHT + 100));
+  const aroundBomb = useRef<number[][]>(createAllZero(WIDTH, HEIGHT));
   const [isOpenedButton, setIsOpenedButton] = useState<boolean[][]>(
-    createAllFalse(WIDTH, HEIGHT + 100)
+    createAllFalse(WIDTH, HEIGHT)
   );
   const [isFlagedButton, setIsFlagedButton] = useState<boolean[][]>(
-    createAllFalse(WIDTH, HEIGHT + 100)
+    createAllFalse(WIDTH, HEIGHT)
   );
   const [flagNum, setFlagNum] = useState<number>(0);
 
@@ -42,16 +42,18 @@ function App() {
   const [firstClick, setFirstClick] = useState<boolean>(true);
 
   // After changing the `size`, variables are initialized.
-  useEffect(() => {
-    setIsOpenedButton(createAllFalse(WIDTH, HEIGHT + 100));
-    setIsFlagedButton(createAllFalse(WIDTH, HEIGHT + 100));
+  const reset: (width: number, height: number) => void = (width, height) => {
+    console.log("reset")
+    setIsOpenedButton(createAllFalse(width, height));
+    setIsFlagedButton(createAllFalse(width, height));
+    aroundBomb.current = createAllZero(width, height)
     setFlagNum(0);
     openedButtonNumRef.current = 0;
     failedRef.current = false
     setSuccess(false)
     setFirstClick(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size]);
+    console.log(isOpenedButton)
+  }
 
   const countAroundFlag: (h: number, w: number) => number = (h, w) => {
     let res = 0
@@ -148,10 +150,12 @@ function App() {
     }
   };
 
+  console.log("Before Rendering")
   return (
     <div onContextMenu={(e) => e.preventDefault()}>
-      <Size />
+      <Size reset={reset}/>
       {height.map((h) => {
+        console.log("isOpnedButton", isOpenedButton)
         return (
           <tr key={h}>
             {width.map((w) => {
@@ -210,9 +214,6 @@ const copyDimension: (
     for (let w = 0; w < width; w++) {
       dst[h][w] = src[h][w];
     }
-  }
-  for (let h = height; h < height + 100; h++) {
-    dst[h] = [];
   }
   return dst;
 };

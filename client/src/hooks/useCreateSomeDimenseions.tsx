@@ -92,9 +92,6 @@ export const useCreateSomeDimensions = () => {
         }
       }
     }
-    for (let h = height; h < height + 100; h++) {
-      bombCount[h] = [];
-    }
     return bombCount;
   };
 
