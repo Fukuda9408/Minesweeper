@@ -9,7 +9,7 @@ type Props = {
 };
 
 export const Timer = (props: Props) => {
-  const { seconds, minutes, isRunning, start, pause, reset } = useStopwatch({
+  const { seconds, minutes, start, pause, reset } = useStopwatch({
     autoStart: false,
   });
   const size = useRecoilValue(sizeState)
@@ -19,16 +19,19 @@ export const Timer = (props: Props) => {
     if (timerStart) {
       start()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timerStart])
 
   useEffect(() => {
     if (end) {
       pause()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [end])
 
   useEffect(() => {
     reset(new Date(), false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size])
 
   return (

@@ -114,14 +114,7 @@ function App() {
 
     // Success decision
     if (openedButtonNumRef.current === WIDTH * HEIGHT - BOMB_NUM) {
-      // if (!failed) {
-      //   setTimeout(() => {
-      //     setFailed(true);
-      //     alert("Success");
-      //   }, 100);
-      // }
       if (!failedRef.current) {
-        console.log("success")
         setSuccess(true)
         setTimeout(() => {
           alert("Success")
